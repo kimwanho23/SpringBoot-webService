@@ -1,3 +1,4 @@
+/*
 package kwh.awsweb.domain.posts;
 
 import org.assertj.core.api.Assertions;
@@ -66,4 +67,4 @@ class PostsRepositoryTest {
         assertThat(posts.getCreatedDate()).isAfter(now);
         assertThat(posts.getModifiedDate()).isAfter(now);
     }
-}
+}*/

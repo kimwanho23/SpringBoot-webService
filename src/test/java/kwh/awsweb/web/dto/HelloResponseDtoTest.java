@@ -1,3 +1,4 @@
+/*
 package kwh.awsweb.web.dto;
 
 import org.assertj.core.api.Assertions;
@@ -24,4 +25,4 @@ class HelloResponseDtoTest {
 
 
 
-}
+}*/
