@@ -1,31 +1,41 @@
 /*
 package kwh.awsweb.web;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kwh.awsweb.config.auth.SecurityConfig;
 import kwh.awsweb.domain.posts.Posts;
 import kwh.awsweb.domain.posts.PostsRepository;
 import kwh.awsweb.web.dto.PostsSaveRequestDto;
 import kwh.awsweb.web.dto.PostsUpdateRequestDto;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+@EnableJdbcHttpSession
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 class PostsApiControllerTest {
 
     @LocalServerPort
@@ -37,68 +47,111 @@ class PostsApiControllerTest {
     @Autowired
     private PostsRepository postsRepository;
 
+    @Autowired
+    private WebApplicationContext context;
+
+    private MockMvc mvc;
+
+    @BeforeEach
+    public void setup() {
+        mvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
+
     @AfterEach
     public void tearDown() throws Exception {
         postsRepository.deleteAll();
     }
 
+    // 인증된 모의(가짜) 사용자를 만들어서 사용한다.
+    // roles에 권한을 추가할 수 있다.
+    // 즉, 이 어노테이션으로 인해 ROLE_USER 권한을 가진 사용자가 API를 요청하는 것과 동일한 효과를 가지게 된다.
+    @DisplayName("Posts 등록")
     @Test
-    public void testPostsAdd() throws Exception {
-        //given
+    @WithMockUser(roles = "USER")
+    public void Posts_등록() throws Exception {
+        // given
         String title = "title";
         String content = "content";
-        PostsSaveRequestDto requestDto = new PostsSaveRequestDto().builder()
+        PostsSaveRequestDto requestDTO = PostsSaveRequestDto.builder()
                 .title(title)
                 .content(content)
                 .author("author")
                 .build();
 
         String url = "http://localhost:" + port + "/api/v1/posts";
-        //when
-        ResponseEntity<Long> responseEntity = restTemplate.postForEntity(url, requestDto, Long.class);
 
-        //then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+        // when
+//        ResponseEntity<Long> responseEntity = restTemplate.postForEntity(url, requestDTO, Long.class);
 
+        // mvc.perform : 생성된 MockMvc를 통해 API를 테스트 한다.
+        // 본문(Body) 영역은 문자열로 표현하기 위해 ObjectMapper를 통해 문자열 JSON으로 변환한다.
+        // MediaType.APPLICATION_JSON_UTF8이 deprecated가 되어 MediaType.APPLICATION_JSON으로 바꿔주었다.
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(requestDTO)))
+                .andExpect(status().isOk());
+
+        // then
+//        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+//
         List<Posts> all = postsRepository.findAll();
         assertThat(all.get(0).getTitle()).isEqualTo(title);
         assertThat(all.get(0).getContent()).isEqualTo(content);
     }
 
+    @DisplayName("Posts 수정")
     @Test
-    public void testPostsUpdate() throws Exception {
-        //given
+    @WithMockUser(roles = "USER")
+    public void Posts_수정() throws Exception {
+        // given
         Posts savedPosts = postsRepository.save(Posts.builder()
                 .title("title")
                 .content("content")
                 .author("author")
                 .build());
 
-        Long updatedId = savedPosts.getId();
+        Long updateId = savedPosts.getId();
         String expectedTitle = "title2";
-        String expectedContent = "content2";
+        String expectedContent = "contents";
 
-        PostsUpdateRequestDto requestDto = PostsUpdateRequestDto.builder()
+        PostsUpdateRequestDto requestDTO = PostsUpdateRequestDto.builder()
                 .title(expectedTitle)
                 .content(expectedContent)
                 .build();
 
-        String url = "http://localhost:" + port + "/api/v1/posts/" + updatedId;
+        String url = "http://localhost:" + port + "/api/v1/posts/" + updateId;
 
-        HttpEntity<PostsUpdateRequestDto> requestEntity = new HttpEntity<>(requestDto);
+        HttpEntity<PostsUpdateRequestDto> requestEntity = new HttpEntity<>(requestDTO);
 
-        //when
-        ResponseEntity<Long> responseEntity = restTemplate
-                .exchange(url, HttpMethod.PUT
-                , requestEntity, Long.class);
+        // when
+//        ResponseEntity<Long> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Long.class);
+        mvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(requestDTO)))
+                .andExpect(status().isOk());
 
-        //then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+
+        // then
+//        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+//        assertThat(responseEntity.getBody()).isGreaterThan(0L);
+        // responseEntity의 출력 결과
+        // <
+        // 200 OK OK,
+        // 1,
+        // [Content-Type:"application/json",
+        // Transfer-Encoding:"chunked",
+        // Date:"Fri, 14 Apr 2023 00:36:36 GMT",
+        // Keep-Alive:"timeout=60",
+        // Connection:"keep-alive"]
+        // >
+
         List<Posts> all = postsRepository.findAll();
         assertThat(all.get(0).getTitle()).isEqualTo(expectedTitle);
         assertThat(all.get(0).getContent()).isEqualTo(expectedContent);
-
     }
-}*/
+}
+*/

@@ -1,4 +1,4 @@
-/*
+
 package kwh.awsweb.web;
 
 import org.assertj.core.api.Assertions;
@@ -28,4 +28,4 @@ public class IndexControllerTest {
         Assertions.assertThat(body).contains("스프링 부트로 시작하는 웹 서비스");
     }
 
-}*/
+}
