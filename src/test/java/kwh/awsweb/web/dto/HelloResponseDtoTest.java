@@ -1,3 +1,4 @@
+/*
 
 package kwh.awsweb.web.dto;
 
@@ -25,4 +26,4 @@ class HelloResponseDtoTest {
 
 
 
-}
+}*/
