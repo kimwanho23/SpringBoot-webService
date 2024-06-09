@@ -1,5 +1,4 @@
 /*
-
 package kwh.awsweb.web;
 
 import org.assertj.core.api.Assertions;
@@ -30,4 +29,3 @@ public class IndexControllerTest {
     }
 
 }
-*/
