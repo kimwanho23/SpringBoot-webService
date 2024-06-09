@@ -1,4 +1,4 @@
-/*
+
 package kwh.awsweb.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kwh.awsweb.config.auth.SecurityConfig;
@@ -154,4 +154,4 @@ class PostsApiControllerTest {
         assertThat(all.get(0).getContent()).isEqualTo(expectedContent);
     }
 }
-*/
+
