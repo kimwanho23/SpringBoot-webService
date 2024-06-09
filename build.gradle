@@ -46,7 +46,7 @@ tasks.named('test') {
 jar {
 	manifest {
 		attributes(
-				'Main-Class': 'kwh.awsweb'
+				'Main-Class': 'kwh.awsweb.AwswebApplication'
 		)
 	}
 }
