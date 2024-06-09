@@ -1,6 +1,6 @@
 package kwh.awsweb.config.auth.dto;
 
-import kwh.awsweb.domain.user.User;
+import kwh.awsweb.domain.user.Users;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -11,7 +11,7 @@ public class SessionUser implements Serializable {
     private String email;
     private String picture;
 
-    public SessionUser(User user) {
+    public SessionUser(Users user) {
         this.name = user.getName();
         this.email = user.getEmail();
         this.picture = user.getPicture();
