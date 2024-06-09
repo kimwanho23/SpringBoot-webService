@@ -3,7 +3,7 @@ package kwh.awsweb;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(classes = AwswebApplicationTests.class)
 class AwswebApplicationTests {
 
 	@Test
