@@ -20,9 +20,6 @@ function find_idle_profile() {
           IDLE_PROFILE=real1
         fi
 
-        #bash라는 스크립트는 __값을 반환하는 기능이 없습니다.__
-        #그래서 __제일 마지막줄에 echo로 결과를 출력 후__, 클라이언트에서 그 값을 잡아서($((find_idle_profile)) 사용합니다.
-        #중간에 echo를 사용해선 안됩니다.
         echo "${IDLE_PROFILE}"
 }
 
